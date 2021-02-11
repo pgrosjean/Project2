@@ -1,7 +1,5 @@
 import numpy as np
 import pandas as pd
-import umap
-from tqdm import tqdm
 
 
 ############################################################
@@ -25,7 +23,7 @@ def preprocess_data(csv_filename, fingerprint_length=1024):
 	for idx in range(len(df)):
 		ligand_info = df.iloc[idx].values
 		ligand_id, dock_score, smiles, on_bits = ligand_info
-		ligand_set.append(Ligand(ligand_id, dock_score, smiles, on_bits, fp_length))
+		ligand_list.append(Ligand(ligand_id, dock_score, smiles, on_bits, fingerprint_length))
 	return ligand_list
 
 
@@ -45,11 +43,45 @@ def generate_fingerprint_array(ligand_list):
 	return fp_arr
 
 
-def cluster_similarity(arr, c1_labels, c2_labels):
+def cluster_similarity(arr, c1_labels, c2_labels, index='jaccard'):
 	'''
+	This function measures the similarity of cluster 1 and cluster 2
+	based on the arr using either the 'jaccard' or 'rand' index.
 
+	Args:
+		arr (array-like): input array for clustering
+		c1_labels (array-like): 1D array of cluster labels.
+		c2_labels (array-like): 1D array of cluster labels.
+		index (str, default='jaccard'): Index to use must be either 'jaccard'
+			or 'rand'
+
+	Returns:
+		sim_index (float): Similarity index value.
 	'''
-	pass
+	index = index.lower()
+	assert index in ['jaccard', 'rand'], 'Index must be jaccard or rand'
+	f_00 = 0
+	f_10 = 0
+	f_01 = 0
+	f_11 = 0
+	for i in range(arr.shape[0]):
+		for j in range(arr.shape[0])[i+1:]:
+			c1 = c1_labels[i] == c1_labels[j]
+			c2 = c2_labels[i] == c2_labels[j]
+			if c1 == False and c2 == False:
+				f_00 += 1
+			elif c1 == True and c2 == False:
+				f_10 += 1
+			elif c1 == False and c2 == True:
+				f_01 += 1
+			elif c1 == True and c2 == True:
+				f_11 += 1
+	if index == 'jaccard':
+		sim_index = f_11/(f_11 + f_10 + f_01)
+		return sim_index
+	elif index == 'rand':
+		sim_index = (f_11 + f_00)/(f_00 + f_01 + f_10 + f_11)
+		return sim_index
 
 
 ############################################################
@@ -64,6 +96,7 @@ class Ligand:
 		dock_score (float): The docking energy score.
 		smiles (str): The smiles identifier string.
 		fingerprint (array-like): ECFP Fingerprint of Molecule.
+
 	'''
 	def __init__(self, ligand_id, dock_score, smiles, on_bits, fp_length=1024):
 		'''
@@ -73,12 +106,14 @@ class Ligand:
 			smiles (str): The smiles identifier string.
 			on_bits (str): string containing on bits in fingerprint seperated
 				by commas.
-			fp_length (int, optional): length of fingerprint. Defaults to 1024.
+			fp_length (int, default=1024): length of fingerprint.
+				Defaults to 1024.
 		'''
 		self.ligand_id = ligand_id
 		self._fp_length = fp_length
 		self.dock_score = float(dock_score)
 		self.smiles = smiles
+		self._on_bits = on_bits
 		self.fingerprint = self._generate_fp_vec()
 
 	def _generate_fp_vec(self):
@@ -86,15 +121,15 @@ class Ligand:
 		This function generates the array-like fingerprint from the sparse
 		string representation.
 		'''
-		on_bits = [idx for idx in self.on_bits.split(',')] # list of on bits
+		on_bits = [int(idx) for idx in self._on_bits.split(',')] # list of on bits
 		fp = np.zeros(self._fp_length) # defining base fp
-		fp[on_bits] = 1.0 # turning bits on
+		fp[on_bits] = 1 # turning bits on
 		return fp
 
 
 class AglomerativeCluster:
 	'''
-	This class is used to define a cluster for use in HierarchicalClustering.
+	This class is used to define a cluster for use in Aglomerative Clustering.
 	'''
 	def __init__(self, ids):
 		'''
@@ -102,7 +137,7 @@ class AglomerativeCluster:
 			ids (list): list of ids or row_labels from arr in cluster.
 		'''
 		if type(ids) != list:
-			ids = list(ids])
+			ids = [ids]
 		self._ids = ids
 
 	@property
@@ -122,13 +157,13 @@ class KMeansCluster:
 	'''
 	This class is used to define a cluster for use in PartitionClustering.
 	'''
-	def __init__(self, initital_cc):
+	def __init__(self, initial_cc):
 		'''
 		Args:
 			initital_cc (arrray-like): Initial cluster center.
 		'''
-		self._cc = inital_cc
-		self._data_inds = np.array([])
+		self._cc = initial_cc
+		self._data_inds = np.array([]).astype('int')
 
 	@property
 	def cc(self):
@@ -165,7 +200,7 @@ class KMeansCluster:
 		self._data_inds = value
 
 
-class MetricBase:
+class BaseMetric:
 	'''
 	This class acts as a base for all clustering algorithms and includes
 	metric functions.
@@ -190,13 +225,13 @@ class MetricBase:
 		Returns:
 			distance (float): Calculated distance.
 		'''
-		set_a = set()
-		set_a.update(a.nonzero())
-		set_b = set()
-		set_b.update(b.nonzero())
+		set_a = set(list(a.nonzero()[0]))
+		# set_a.update()
+		set_b = set(list(b.nonzero()[0]))
+		# set_b.update(list(b.nonzero()))
 		intersect = len(set_a & set_b)
 		union = len(set_a | set_b)
-		distance = intersect / (union - intersect)
+		distance = 1 - (intersect / union)
 		return distance
 
 	def _minowski(self, a, b, p=2):
@@ -309,8 +344,8 @@ class MetricBase:
 		# initailizing distance array for updatin throughout clustering
 		dist_arr = np.zeros((arr.shape[0], arr.shape[0]))
 		# calculating all distances between individual elements
-		for i in np.arange(len(arr.shape[0])):
-			for j in np.arange(len(arr.shape[0])):
+		for i in np.arange(arr.shape[0]):
+			for j in np.arange(arr.shape[0]):
 				distance = self._metric_func(arr[i, :], arr[j,:])
 				dist_arr[i, j] = distance
 		np.fill_diagonal(dist_arr, np.inf)
@@ -369,7 +404,7 @@ class MetricBase:
 
 
 
-class HierarchicalClustering(MetricBase):
+class HierarchicalClustering(BaseMetric):
 	'''
 	This class implements Hierarchical Clustering and inherets from
 	the BaseMetric class. This class is used for generating clusters
@@ -378,14 +413,14 @@ class HierarchicalClustering(MetricBase):
 	def __init__(self, num_clusters=1, metric='tanimoto', linkage='ward'):
 		'''
 		Args:
-			num_clusters (int, optional): Number of clusters calculate.
+			num_clusters (int, default=1): Number of clusters calculate.
 				Defaults to 1.
-			metric (str, optional): Metric function used for clustering.
+			metric (str, default='tanimoto'): Metric function used for clustering.
 				Defaults to Tanimoto (Jaccard). Must be one of
 				'tanimoto', 'manhattan', 'hamming', 'euclidean', 'chebyshev'.
-			linkage (str, optional): Linkage used for clustering. Defaults to
-				Ward linkage. Must be one of 'single', 'upgma', 'wpgma',
-				'complete', 'ward'.
+			linkage (str, default='ward'): Linkage used for clustering.
+				Defaults to Ward linkage. Must be one of 'single', 'upgma',
+				'wpgma', 'complete', 'ward'.
 		'''
 		super(HierarchicalClustering, self).__init__(metric)
 		linkage = linkage.lower()
@@ -500,7 +535,7 @@ class HierarchicalClustering(MetricBase):
 		c1_dist = dist_arr[c1_idx, temp_idx]
 		c2_dist = dist_arr[c1_idx, temp_idx]
 		n_c1 = len(arr_labels[c1_idx].ids)
-		n_c2 = len(arr_labels[cw_idx].ids)
+		n_c2 = len(arr_labels[c2_idx].ids)
 		n_ct = len(arr_labels[temp_idx].ids)
 		n_tot = n_c1 + n_c2 + n_ct
 		alpha_c1 = (n_c1 + n_ct)/n_tot
@@ -553,7 +588,7 @@ class HierarchicalClustering(MetricBase):
 				input row in arr.
 		'''
 		# defining distance array columns/row labels
-		row_labels = np.arange(arr.shape[0])
+		row_labels = range(arr.shape[0])
 		arr_labels = [AglomerativeCluster(x) for x in row_labels]
 		# generating distance matrix
 		dist_arr = self._generate_dist_arr(arr)
@@ -565,30 +600,30 @@ class HierarchicalClustering(MetricBase):
 			# finding minimum distance in distance matrix
 			c1_idx, c2_idx = np.unravel_index(np.argmin(dist_arr, axis=None), dist_arr.shape)
 			# merging clusters
-			c1 = arr_labels[i]
-			c2 = arr_labels[j]
+			c1 = arr_labels[c1_idx]
+			c2 = arr_labels[c2_idx]
 			new_c = AglomerativeCluster(c1.ids + c2.ids)
 			# Updating distance matrix
-			temp_idx_list = np.arange(dist_arr.shape[1])
+			temp_idx_list = list(np.arange(dist_arr.shape[1]))
 			temp_idx_list.pop(c1_idx)
 			temp_idx_list.pop(c2_idx-1)
 			assert c1_idx not in temp_idx_list
 			assert c2_idx not in temp_idx_list
 			# new column for distance matrix
-			new_col = np.zeros((, 1))
-			for temp_idx in temp_idx_list:
-				new_col[clust_idx, 1] = self._linkage_func(c1_idx, c2_idx, temp_idx, dist_arr, arr_labels)
+			new_col = np.zeros((len(temp_idx_list), 1))
+			for i, temp_idx in enumerate(temp_idx_list):
+				new_col[i] = self._linkage_func(c1_idx, c2_idx, temp_idx, dist_arr, arr_labels)
 			# removing old clusters from distance matrix
-			dist_arr = np.delete(dist_arr, [i, j], axis=0)
-			dist_arr = np.delete(dist_arr, [i, j], axis=1)
+			dist_arr = np.delete(dist_arr, [c1_idx, c2_idx], axis=0)
+			dist_arr = np.delete(dist_arr, [c1_idx, c2_idx], axis=1)
 			# Adding new column and row
 			dist_arr = np.hstack([dist_arr, new_col])
-			new_row = np.extend(new_col.T, [[inf]], 1)
+			new_row = np.append(new_col.T, [[np.inf]], 1)
 			dist_arr = np.vstack([dist_arr, new_row])
 			# updating cluster label list
 			arr_labels.append(new_c)
 			arr_labels.pop(c1_idx)
-			arr_labels.pop(c2_ids-1)
+			arr_labels.pop(c2_idx-1)
 		# generating vector of labels
 		cluster_labels = np.zeros((arr.shape[0]))
 		for idx in range(len(arr_labels)):
@@ -604,22 +639,26 @@ class PartitionClustering(BaseMetric):
 	This class implements Partition Clustering and inherets from
 	the BaseMetric class. This class is used for generating clusters
 	using the K-means algorithm.
+
+	Attributes:
+		initial_cluster_centers (array-like): Array of initial cluster centers.
 	'''
 	def __init__(self, num_clusters=1, metric='tanimoto', max_iter=1000):
 		'''
 		Args:
-			num_clusters (int, optional): Number of clusters calculate.
+			num_clusters (int, default=1): Number of clusters calculate.
 				Defaults to 1.
-			metric (str, optional): Metric function used for clustering.
+			metric (str, default='tanimoto'): Metric function used for clustering.
 				Defaults to Tanimoto (Jaccard). Must be one of
 				'tanimoto', 'manhattan', 'hamming', 'euclidean', 'chebyshev'.
-			max_iter (int, optional): The maximum number of times to iterate
+			max_iter (int, default=1000): The maximum number of times to iterate
 				the k_means algorithm if it does not converge first.
 		'''
 		super(PartitionClustering, self).__init__(metric)
 		self._num_clusters = num_clusters
 		self._max_iter = max_iter
 		self._final_clusters = None
+		self.initial_cluster_centers = None
 		# seeding random processes in this class
 		np.random.seed(14)
 
@@ -642,15 +681,15 @@ class PartitionClustering(BaseMetric):
 		'''
 		num_clusters = self._num_clusters
 		initial_ccs = []
-		possible_inds = np.arange(arr.shape[0])
+		possible_inds = list(np.arange(arr.shape[0]))
 		p = np.ones(len(possible_inds))/len(possible_inds)
 		choices = []
 		for _ in range(num_clusters):
 			# randomly choose point based on p
-			rand_choice = np.random.choice(possible_inds, 1, p=p)
+			rand_choice = np.random.choice(possible_inds, 1, p=p).astype('int')[0]
 			choices.append(rand_choice)
 			# remove random choice from possible indices
-			possible_inds.pop(rand_choice)
+			possible_inds.remove(rand_choice)
 			# add cluster center
 			initial_ccs.append(arr[rand_choice, :])
 			# updating probabilities p of choosing new cluster center
@@ -661,8 +700,9 @@ class PartitionClustering(BaseMetric):
 					dists.append(self._metric_func(arr[point_idx, :], arr[cc_idx, :]))
 				p_dists.append(min(dists))
 			p_dist = np.array(p_dists)
-			p = p_dist / np.amax(p_dist)
+			p = p_dist / np.sum(p_dist)
 		initial_ccs = np.array(initial_ccs)
+		assert initial_ccs.shape[0] == num_clusters
 		return initial_ccs
 
 	def cluster(self, arr):
@@ -679,21 +719,22 @@ class PartitionClustering(BaseMetric):
 		'''
 		# generating inital cluster centers using KMeans++ algorithm
 		initial_ccs = self._initialize_cluster_centers(arr)
+		self.initial_cluster_centers = initial_ccs
 		# defining initial empty clusters
-		clusters = [KMeansCluster(inital_ccs[x, :]) for x in initial_ccs.shape[0]]
+		clusters = [KMeansCluster(initial_ccs[x, :]) for x in range(initial_ccs.shape[0])]
 		# generating first round of clusters
 		for row_idx in range(arr.shape[0]):
 			cluster_dist = []
 			for cluster in clusters:
 				cluster_dist.append(self._metric_func(arr[row_idx, :], cluster.cc))
 			top_clust = np.argmin(cluster_dist)
-			clusters[top_clust].data_inds = np.hstack((clusters[top_clust].data_inds, row_idx))
+			clusters[top_clust]._data_inds = np.hstack((clusters[top_clust]._data_inds, row_idx))
 		# iterating until convergence or max_iter is reached
 		for _ in range(self._max_iter):
 			updated_clusters = []
 			# updating cluster centers
 			for cluster in clusters:
-				new_cc = np.mean(arr[cluster.data_inds, :], axis=1)
+				new_cc = np.mean(arr[cluster._data_inds, :], axis=1)
 				updated_clusters.append(KMeansCluster(new_cc))
 			# calculating distance for each point to new cluster centers
 			for row_idx in range(arr.shape[0]):
@@ -701,14 +742,14 @@ class PartitionClustering(BaseMetric):
 				for cluster in updated_clusters:
 					cluster_dist.append(self._metric_func(arr[row_idx, :], cluster.cc))
 				top_clust = np.argmin(cluster_dist)
-				updated_clusters[top_clust].data_inds = np.hstack((updated_clusters[top_clust].data_inds, row_idx))
+				updated_clusters[top_clust]._data_inds = np.hstack((updated_clusters[top_clust]._data_inds, row_idx))
 			# calculating difference between previous clusters and new clusters
 			tot_diff = 0
 			for c1, c2 in zip(clusters, updated_clusters):
 				c1_set = set()
-				c1_set.update(c1.data_inds)
+				c1_set.update(c1._data_inds)
 				c2_set = set()
-				c2_set.update(c2.data_inds)
+				c2_set.update(c2._data_inds)
 				temp_diff = len(c2_set - c1_set)
 				tot_diff += temp_diff
 			# stopping iteration if the clusters converge
@@ -721,6 +762,6 @@ class PartitionClustering(BaseMetric):
 		# generating cluster labels
 		cluster_labels = np.zeros(arr.shape[0])
 		for cluster_idx in range(len(clusters)):
-			cluster_labels[clusters[cluster_idx].data_inds] = cluster_idx
+			cluster_labels[clusters[cluster_idx]._data_inds] = cluster_idx
 		# returning cluster labels
 		return cluster_labels
