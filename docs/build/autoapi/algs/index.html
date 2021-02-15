@@ -1,0 +1,529 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>algs &mdash; BMI 206: Clustering 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> BMI 206: Clustering
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BMI 206: Clustering</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">algs</span></code></li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/autoapi/algs/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-algs">
+<span id="algs"></span><h1><a class="reference internal" href="#module-algs" title="algs"><code class="xref py py-mod docutils literal notranslate"><span class="pre">algs</span></code></a><a class="headerlink" href="#module-algs" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#algs.Ligand" title="algs.Ligand"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Ligand</span></code></a></p></td>
+<td><p>This class describes a small molecule, by storing info about its identity.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#algs.AglomerativeCluster" title="algs.AglomerativeCluster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AglomerativeCluster</span></code></a></p></td>
+<td><p>This class is used to define a cluster for use in Aglomerative Clustering.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#algs.KMeansCluster" title="algs.KMeansCluster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KMeansCluster</span></code></a></p></td>
+<td><p>This class is used to define a cluster for use in PartitionClustering.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#algs.BaseMetric" title="algs.BaseMetric"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseMetric</span></code></a></p></td>
+<td><p>This class acts as a base for all clustering algorithms and includes</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#algs.HierarchicalClustering" title="algs.HierarchicalClustering"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HierarchicalClustering</span></code></a></p></td>
+<td><p>This class implements Hierarchical Clustering and inherets from</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#algs.PartitionClustering" title="algs.PartitionClustering"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PartitionClustering</span></code></a></p></td>
+<td><p>This class implements Partition Clustering and inherets from</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#algs.preprocess_data" title="algs.preprocess_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">preprocess_data</span></code></a>(csv_filename, fingerprint_length=1024)</p></td>
+<td><p>This function preprocess converts the data read in from</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#algs.generate_fingerprint_array" title="algs.generate_fingerprint_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_fingerprint_array</span></code></a>(ligand_list)</p></td>
+<td><p>This function converts a list of Ligand class instances to a numpy</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#algs.cluster_similarity" title="algs.cluster_similarity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cluster_similarity</span></code></a>(arr, c1_labels, c2_labels, index='jaccard')</p></td>
+<td><p>This function measures the similarity of cluster 1 and cluster 2</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt id="algs.preprocess_data">
+<code class="sig-prename descclassname">algs.</code><code class="sig-name descname">preprocess_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">csv_filename</span></em>, <em class="sig-param"><span class="n">fingerprint_length</span><span class="o">=</span><span class="default_value">1024</span></em><span class="sig-paren">)</span><a class="headerlink" href="#algs.preprocess_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function preprocess converts the data read in from
+a csv function with ligand information into a set of
+ligand class instances.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>csv_filename</strong> (<em>str</em>) – Name of csv file for reading in.</p></li>
+<li><p><strong>fp_length</strong> (<em>int</em><em>, </em><em>optional</em>) – length of fingerprint. Defaults to 1024.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Set of Ligand class instances.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ligand_list (list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="algs.generate_fingerprint_array">
+<code class="sig-prename descclassname">algs.</code><code class="sig-name descname">generate_fingerprint_array</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ligand_list</span></em><span class="sig-paren">)</span><a class="headerlink" href="#algs.generate_fingerprint_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function converts a list of Ligand class instances to a numpy
+array the fingerprints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ligand_list</strong> (<em>list</em>) – List of Ligan class instances.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Numpy array of full-bit fingerprints.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>fp_arr (array-like)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="algs.cluster_similarity">
+<code class="sig-prename descclassname">algs.</code><code class="sig-name descname">cluster_similarity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arr</span></em>, <em class="sig-param"><span class="n">c1_labels</span></em>, <em class="sig-param"><span class="n">c2_labels</span></em>, <em class="sig-param"><span class="n">index</span><span class="o">=</span><span class="default_value">'jaccard'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#algs.cluster_similarity" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function measures the similarity of cluster 1 and cluster 2
+based on the arr using either the ‘jaccard’ or ‘rand’ index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arr</strong> (<em>array-like</em>) – input array for clustering</p></li>
+<li><p><strong>c1_labels</strong> (<em>array-like</em>) – 1D array of cluster labels.</p></li>
+<li><p><strong>c2_labels</strong> (<em>array-like</em>) – 1D array of cluster labels.</p></li>
+<li><p><strong>index</strong> (<em>str</em><em>, </em><em>default='jaccard'</em>) – Index to use must be either ‘jaccard’
+or ‘rand’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Similarity index value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>sim_index (float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="algs.Ligand">
+<em class="property">class </em><code class="sig-prename descclassname">algs.</code><code class="sig-name descname">Ligand</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ligand_id</span></em>, <em class="sig-param"><span class="n">dock_score</span></em>, <em class="sig-param"><span class="n">smiles</span></em>, <em class="sig-param"><span class="n">on_bits</span></em>, <em class="sig-param"><span class="n">fp_length</span><span class="o">=</span><span class="default_value">1024</span></em><span class="sig-paren">)</span><a class="headerlink" href="#algs.Ligand" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class describes a small molecule, by storing info about its identity.</p>
+<dl class="py attribute">
+<dt id="algs.Ligand.ligand_id">
+<code class="sig-name descname">ligand_id</code><a class="headerlink" href="#algs.Ligand.ligand_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>The ligand id.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="algs.Ligand.dock_score">
+<code class="sig-name descname">dock_score</code><a class="headerlink" href="#algs.Ligand.dock_score" title="Permalink to this definition">¶</a></dt>
+<dd><p>The docking energy score.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="algs.Ligand.smiles">
+<code class="sig-name descname">smiles</code><a class="headerlink" href="#algs.Ligand.smiles" title="Permalink to this definition">¶</a></dt>
+<dd><p>The smiles identifier string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="algs.Ligand.fingerprint">
+<code class="sig-name descname">fingerprint</code><a class="headerlink" href="#algs.Ligand.fingerprint" title="Permalink to this definition">¶</a></dt>
+<dd><p>ECFP Fingerprint of Molecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="algs.AglomerativeCluster">
+<em class="property">class </em><code class="sig-prename descclassname">algs.</code><code class="sig-name descname">AglomerativeCluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ids</span></em><span class="sig-paren">)</span><a class="headerlink" href="#algs.AglomerativeCluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class is used to define a cluster for use in Aglomerative Clustering.</p>
+<dl class="py method">
+<dt id="algs.AglomerativeCluster.ids">
+<em class="property">property </em><code class="sig-name descname">ids</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#algs.AglomerativeCluster.ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>list: list of ids in the cluster that correspond to
+row names in the array being clustered.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="algs.KMeansCluster">
+<em class="property">class </em><code class="sig-prename descclassname">algs.</code><code class="sig-name descname">KMeansCluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">initial_cc</span></em><span class="sig-paren">)</span><a class="headerlink" href="#algs.KMeansCluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class is used to define a cluster for use in PartitionClustering.</p>
+<dl class="py method">
+<dt id="algs.KMeansCluster.cc">
+<em class="property">property </em><code class="sig-name descname">cc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#algs.KMeansCluster.cc" title="Permalink to this definition">¶</a></dt>
+<dd><p>array-like: 1D array of size [1, num_features] describing the location
+of this clusters cluster center.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="algs.KMeansCluster.data_inds">
+<em class="property">property </em><code class="sig-name descname">data_inds</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#algs.KMeansCluster.data_inds" title="Permalink to this definition">¶</a></dt>
+<dd><p>array_like: Array of size [1, num_points] conatining the indices of the
+data in the input arry that belong to this cluster.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="algs.BaseMetric">
+<em class="property">class </em><code class="sig-prename descclassname">algs.</code><code class="sig-name descname">BaseMetric</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">metric</span></em><span class="sig-paren">)</span><a class="headerlink" href="#algs.BaseMetric" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class acts as a base for all clustering algorithms and includes
+metric functions.</p>
+<dl class="py method">
+<dt id="algs.BaseMetric.generate_dist_arr">
+<code class="sig-name descname">generate_dist_arr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">arr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#algs.BaseMetric.generate_dist_arr" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function generates the initial distance matrix for use
+in the HierarchicalClustering scheme.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>arr</strong> (<em>array-like</em>) – Input array of dimensions elements x features
+for clustering.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Initial distance array used in clustering.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dist_arr (array-like)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="algs.BaseMetric.cluster_quality">
+<code class="sig-name descname">cluster_quality</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">arr</span></em>, <em class="sig-param"><span class="n">cluster_labels</span></em><span class="sig-paren">)</span><a class="headerlink" href="#algs.BaseMetric.cluster_quality" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function calculates the silhouette quality metric after clustering
+has been performed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arr</strong> (<em>array-like</em>) – Array that has been clustered.</p></li>
+<li><p><strong>cluster_labels</strong> (<em>array-like</em>) – Array of cluster labels from clustering.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The calculated silhouette quality metric.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>quality_score (float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="algs.HierarchicalClustering">
+<em class="property">class </em><code class="sig-prename descclassname">algs.</code><code class="sig-name descname">HierarchicalClustering</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_clusters</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">metric</span><span class="o">=</span><span class="default_value">'tanimoto'</span></em>, <em class="sig-param"><span class="n">linkage</span><span class="o">=</span><span class="default_value">'ward'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#algs.HierarchicalClustering" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#algs.BaseMetric" title="algs.BaseMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">algs.BaseMetric</span></code></a></p>
+<p>This class implements Hierarchical Clustering and inherets from
+the BaseMetric class. This class is used for generating clusters
+using alglomerative clustering.</p>
+<dl class="py method">
+<dt id="algs.HierarchicalClustering.cluster">
+<code class="sig-name descname">cluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">arr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#algs.HierarchicalClustering.cluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function runs the Hierarchical Clustering algorithm
+and returns labels for each cluster.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>arr</strong> (<em>array-like</em>) – array of dimensions elements x features.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Labels corresponding to each</dt><dd><p>input row in arr.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>cluster_labels (array_like)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="algs.PartitionClustering">
+<em class="property">class </em><code class="sig-prename descclassname">algs.</code><code class="sig-name descname">PartitionClustering</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_clusters</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">metric</span><span class="o">=</span><span class="default_value">'tanimoto'</span></em>, <em class="sig-param"><span class="n">max_iter</span><span class="o">=</span><span class="default_value">1000</span></em><span class="sig-paren">)</span><a class="headerlink" href="#algs.PartitionClustering" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#algs.BaseMetric" title="algs.BaseMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">algs.BaseMetric</span></code></a></p>
+<p>This class implements Partition Clustering and inherets from
+the BaseMetric class. This class is used for generating clusters
+using the K-means algorithm.</p>
+<dl class="py attribute">
+<dt id="algs.PartitionClustering.initial_cluster_centers">
+<code class="sig-name descname">initial_cluster_centers</code><a class="headerlink" href="#algs.PartitionClustering.initial_cluster_centers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Array of initial cluster centers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="algs.PartitionClustering.final_clusters_">
+<em class="property">property </em><code class="sig-name descname">final_clusters_</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em><span class="sig-paren">)</span><a class="headerlink" href="#algs.PartitionClustering.final_clusters_" title="Permalink to this definition">¶</a></dt>
+<dd><p>list: <a href="#id1"><span class="problematic" id="id2">final_clusters_</span></a> is a list of KMeansCluster class instances</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="algs.PartitionClustering.cluster">
+<code class="sig-name descname">cluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">self</span></em>, <em class="sig-param"><span class="n">arr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#algs.PartitionClustering.cluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function runs the Partition Clustering K-means algorithm
+and returns labels for each cluster.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>arr</strong> (<em>array-like</em>) – array of dimensions elements x features.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Labels corresponding to each</dt><dd><p>input row in arr.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>cluster_labels (array_like)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Parker Grosjean.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

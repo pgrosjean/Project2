@@ -1,0 +1,238 @@
+:mod:`algs`
+===========
+
+.. py:module:: algs
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   algs.Ligand
+   algs.AglomerativeCluster
+   algs.KMeansCluster
+   algs.BaseMetric
+   algs.HierarchicalClustering
+   algs.PartitionClustering
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   algs.preprocess_data
+   algs.generate_fingerprint_array
+   algs.cluster_similarity
+
+
+.. function:: preprocess_data(csv_filename, fingerprint_length=1024)
+
+   This function preprocess converts the data read in from
+   a csv function with ligand information into a set of
+   ligand class instances.
+
+   :param csv_filename: Name of csv file for reading in.
+   :type csv_filename: str
+   :param fp_length: length of fingerprint. Defaults to 1024.
+   :type fp_length: int, optional
+
+   :returns: Set of Ligand class instances.
+   :rtype: ligand_list (list)
+
+
+.. function:: generate_fingerprint_array(ligand_list)
+
+   This function converts a list of Ligand class instances to a numpy
+   array the fingerprints.
+
+   :param ligand_list: List of Ligan class instances.
+   :type ligand_list: list
+
+   :returns: Numpy array of full-bit fingerprints.
+   :rtype: fp_arr (array-like)
+
+
+.. function:: cluster_similarity(arr, c1_labels, c2_labels, index='jaccard')
+
+   This function measures the similarity of cluster 1 and cluster 2
+   based on the arr using either the 'jaccard' or 'rand' index.
+
+   :param arr: input array for clustering
+   :type arr: array-like
+   :param c1_labels: 1D array of cluster labels.
+   :type c1_labels: array-like
+   :param c2_labels: 1D array of cluster labels.
+   :type c2_labels: array-like
+   :param index: Index to use must be either 'jaccard'
+                 or 'rand'
+   :type index: str, default='jaccard'
+
+   :returns: Similarity index value.
+   :rtype: sim_index (float)
+
+
+.. class:: Ligand(ligand_id, dock_score, smiles, on_bits, fp_length=1024)
+
+
+   This class describes a small molecule, by storing info about its identity.
+
+   .. attribute:: ligand_id
+
+      The ligand id.
+
+      :type: str
+
+   .. attribute:: dock_score
+
+      The docking energy score.
+
+      :type: float
+
+   .. attribute:: smiles
+
+      The smiles identifier string.
+
+      :type: str
+
+   .. attribute:: fingerprint
+
+      ECFP Fingerprint of Molecule.
+
+      :type: array-like
+
+
+.. class:: AglomerativeCluster(ids)
+
+
+   This class is used to define a cluster for use in Aglomerative Clustering.
+
+   .. method:: ids(self)
+      :property:
+
+      list: list of ids in the cluster that correspond to
+      row names in the array being clustered.
+
+
+
+.. class:: KMeansCluster(initial_cc)
+
+
+   This class is used to define a cluster for use in PartitionClustering.
+
+   .. method:: cc(self)
+      :property:
+
+      array-like: 1D array of size [1, num_features] describing the location
+      of this clusters cluster center.
+
+
+   .. method:: data_inds(self)
+      :property:
+
+      array_like: Array of size [1, num_points] conatining the indices of the
+      data in the input arry that belong to this cluster.
+
+
+
+.. class:: BaseMetric(metric)
+
+
+   This class acts as a base for all clustering algorithms and includes
+   metric functions.
+
+   .. method:: generate_dist_arr(self, arr)
+
+      This function generates the initial distance matrix for use
+      in the HierarchicalClustering scheme.
+
+      :param arr: Input array of dimensions elements x features
+                  for clustering.
+      :type arr: array-like
+
+      :returns: Initial distance array used in clustering.
+      :rtype: dist_arr (array-like)
+
+
+   .. method:: cluster_quality(self, arr, cluster_labels)
+
+      This function calculates the silhouette quality metric after clustering
+      has been performed.
+
+      :param arr: Array that has been clustered.
+      :type arr: array-like
+      :param cluster_labels: Array of cluster labels from clustering.
+      :type cluster_labels: array-like
+
+      :returns: The calculated silhouette quality metric.
+      :rtype: quality_score (float)
+
+
+
+.. class:: HierarchicalClustering(num_clusters=1, metric='tanimoto', linkage='ward')
+
+
+   Bases: :class:`algs.BaseMetric`
+
+   This class implements Hierarchical Clustering and inherets from
+   the BaseMetric class. This class is used for generating clusters
+   using alglomerative clustering.
+
+   .. method:: cluster(self, arr)
+
+      This function runs the Hierarchical Clustering algorithm
+      and returns labels for each cluster.
+
+      :param arr: array of dimensions elements x features.
+      :type arr: array-like
+
+      :returns:
+
+                Labels corresponding to each
+                        input row in arr.
+      :rtype: cluster_labels (array_like)
+
+
+
+.. class:: PartitionClustering(num_clusters=1, metric='tanimoto', max_iter=1000)
+
+
+   Bases: :class:`algs.BaseMetric`
+
+   This class implements Partition Clustering and inherets from
+   the BaseMetric class. This class is used for generating clusters
+   using the K-means algorithm.
+
+   .. attribute:: initial_cluster_centers
+
+      Array of initial cluster centers.
+
+      :type: array-like
+
+   .. method:: final_clusters_(self)
+      :property:
+
+      list: final_clusters_ is a list of KMeansCluster class instances
+
+
+   .. method:: cluster(self, arr)
+
+      This function runs the Partition Clustering K-means algorithm
+      and returns labels for each cluster.
+
+      :param arr: array of dimensions elements x features.
+      :type arr: array-like
+
+      :returns:
+
+                Labels corresponding to each
+                        input row in arr.
+      :rtype: cluster_labels (array_like)
+
+
+

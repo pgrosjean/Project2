@@ -164,6 +164,7 @@ class KMeansCluster:
 		'''
 		self._cc = initial_cc
 		self._data_inds = np.array([]).astype('int')
+		self._distances = np.array([]).astype('float')
 
 	@property
 	def cc(self):
@@ -183,15 +184,15 @@ class KMeansCluster:
 		self._cc = value
 
 	@property
-	def data(self):
+	def data_inds(self):
 		'''
 		array_like: Array of size [1, num_points] conatining the indices of the
 			data in the input arry that belong to this cluster.
 		'''
 		return self._data_inds
 
-	@data.setter
-	def data(self, value):
+	@data_inds.setter
+	def data_inds(self, value):
 		if type(value) != np.ndarray:
 			if type(value) == list:
 				value = np.array(value)
@@ -210,6 +211,7 @@ class BaseMetric:
 		Args:
 			metric (str): metric to use for clustering when inhereting.
 		'''
+		metric = metric.lower()
 		assert metric in ['tanimoto', 'manhattan', 'hamming', 'euclidean', 'chebyshev']
 		metric = metric.lower()
 		self._metric = metric
@@ -329,7 +331,7 @@ class BaseMetric:
 		elif metric == 'chebyshev':
 			return self._chebyshev(a,b)
 
-	def _generate_dist_arr(self, arr):
+	def generate_dist_arr(self, arr):
 		'''
 		This function generates the initial distance matrix for use
 		in the HierarchicalClustering scheme.
@@ -343,11 +345,15 @@ class BaseMetric:
 		'''
 		# initailizing distance array for updatin throughout clustering
 		dist_arr = np.zeros((arr.shape[0], arr.shape[0]))
-		# calculating all distances between individual elements
+		# calculating all distances between individual elements fow upper triangle
 		for i in np.arange(arr.shape[0]):
-			for j in np.arange(arr.shape[0]):
+			for j in np.arange(arr.shape[0])[i+1:]:
 				distance = self._metric_func(arr[i, :], arr[j,:])
 				dist_arr[i, j] = distance
+		# making the matrix symmetric
+		i_lower = np.tril_indices(dist_arr.shape[0], 0)
+		dist_arr[i_lower] = dist_arr.T[i_lower]
+		# filling in the diaganol with infs
 		np.fill_diagonal(dist_arr, np.inf)
 		return dist_arr
 
@@ -364,7 +370,7 @@ class BaseMetric:
 			quality_score (float): The calculated silhouette quality metric.
 		'''
 		# calculating distance matrix
-		dist_arr = self._generate_dist_arr(arr)
+		dist_arr = self.generate_dist_arr(arr)
 		cluster_list = [] # list that contains indices of points in dist_arr
 		for c_num in np.unique(cluster_labels):
 			# establishing indices to all in-cluster points
@@ -374,26 +380,30 @@ class BaseMetric:
 		for base_c_idx in range(len(cluster_list)):
 			base_c = cluster_list[base_c_idx]
 			other_cs = [x for i,x in enumerate(cluster_list) if i != base_c_idx]
-			# calculating inter cluster distances
+			# calculating inter cluster distances (a vals)
 			a_vec = []
 			for i in base_c:
 				dists = []
-				for j in [j for j in base_c != i]:
+				for j in [j for j in base_c[base_c != i]]:
 					dists.append(dist_arr[i, j])
+				if len(dists) == 0:
+					dists = [0]
 				a_vec.append(np.mean(np.array(dists)))
 			a_vec = np.array(a_vec)
 			# calculating intra cluster distances
 			exp_b_vec = []
-			# iterating through each other cluster and calculating distances
-			for i in base_c:
+			# iterating through each other cluster and calculating distances (b vals)
+			for other_c in other_cs:
 				temp_b_vec = []
-				for other_c in other_cs:
-					dists = []
+				for i in base_c:
+					si_list = []
 					for j in other_c:
-						dists.append(dist_arr[i, j])
-					temp_b_vec.append(np.mean(np.array(dists)))
-				exp_b_vec.append(temp_b_vec)
+						si_list.append(dist_arr[i, j])
+					temp_b_vec.append(np.mean(np.array(si_list)))
+				exp_b_vec.append(np.array(temp_b_vec))
+			exp_b_vec = np.array(exp_b_vec)
 			b_vec = np.min(np.array(exp_b_vec), axis=0)
+			assert np.count_nonzero(np.max(np.array([a_vec, b_vec]), axis=0) == 0) == 0, 'Repeated data point clustered to different clusters, too many number of clusters chosen.'
 			s_i = (b_vec-a_vec)/np.max(np.array([a_vec, b_vec]), axis=0)
 			s_i = np.expand_dims(s_i, axis=0)
 			s_vec.append(s_i)
@@ -591,7 +601,7 @@ class HierarchicalClustering(BaseMetric):
 		row_labels = range(arr.shape[0])
 		arr_labels = [AglomerativeCluster(x) for x in row_labels]
 		# generating distance matrix
-		dist_arr = self._generate_dist_arr(arr)
+		dist_arr = self.generate_dist_arr(arr)
 		# Defining conditional for stopping the clustering
 		num_clusters = self._num_clusters
 		assert num_clusters >= 1, 'Method requires at least one cluster'
@@ -720,6 +730,8 @@ class PartitionClustering(BaseMetric):
 		# generating inital cluster centers using KMeans++ algorithm
 		initial_ccs = self._initialize_cluster_centers(arr)
 		self.initial_cluster_centers = initial_ccs
+		# Calculating distance matrix for use in finding the medoid of clusters
+		dist_arr = self.generate_dist_arr(arr)
 		# defining initial empty clusters
 		clusters = [KMeansCluster(initial_ccs[x, :]) for x in range(initial_ccs.shape[0])]
 		# generating first round of clusters
@@ -728,13 +740,18 @@ class PartitionClustering(BaseMetric):
 			for cluster in clusters:
 				cluster_dist.append(self._metric_func(arr[row_idx, :], cluster.cc))
 			top_clust = np.argmin(cluster_dist)
-			clusters[top_clust]._data_inds = np.hstack((clusters[top_clust]._data_inds, row_idx))
+			top_clust_dist = np.amin(cluster_dist)
+			clusters[top_clust].data_inds = np.hstack((clusters[top_clust].data_inds, row_idx))
+			clusters[top_clust]._distances = np.hstack((clusters[top_clust]._distances, top_clust_dist))
 		# iterating until convergence or max_iter is reached
-		for _ in range(self._max_iter):
+		for iteration in range(self._max_iter):
 			updated_clusters = []
 			# updating cluster centers
 			for cluster in clusters:
-				new_cc = np.mean(arr[cluster._data_inds, :], axis=1)
+				new_cc_average = np.mean(arr[cluster.data_inds, :], axis=0)
+				# setting the medoid as the new cluster center
+				medoid_idx = np.argmin(np.sum(dist_arr[cluster.data_inds, cluster.data_inds], axis=0))
+				new_cc = arr[cluster.data_inds[medoid_idx], :]
 				updated_clusters.append(KMeansCluster(new_cc))
 			# calculating distance for each point to new cluster centers
 			for row_idx in range(arr.shape[0]):
@@ -742,26 +759,60 @@ class PartitionClustering(BaseMetric):
 				for cluster in updated_clusters:
 					cluster_dist.append(self._metric_func(arr[row_idx, :], cluster.cc))
 				top_clust = np.argmin(cluster_dist)
-				updated_clusters[top_clust]._data_inds = np.hstack((updated_clusters[top_clust]._data_inds, row_idx))
+				updated_clusters[top_clust].data_inds = np.hstack((updated_clusters[top_clust].data_inds, row_idx))
+
+			# # handeling any empty clusters if there are any
+			# # finding the futhest centroid from the centroid of the largest cluster
+			# clust_sizes = np.array([c.data_inds.shape[0] for c in updated_clusters])
+			# print([len(x.cc) for x in updated_clusters])
+			# clust_sizes_ordered = np.argsort(np.argsort(clust_sizes))[(clust_sizes > 0)]
+			# # calculating the number of clusters with 0
+			# num_empty_clusters = np.sum(np.array(clust_sizes) == 0)
+			# if num_empty_clusters > 0:
+			# 	empty_clusters_inds = np.arange(len(updated_clusters))[clust_sizes == 0]
+			# 	clust_sizes_ordered = list(clust_sizes_ordered)
+			# 	# Generating new cluster center for all clusters with no points
+			# 	largest_cluster = updated_clusters[clust_sizes_ordered.pop(np.argmax(np.array(clust_sizes_ordered)))].cc
+			# 	dists = []
+			# 	# findinng the furthest away cluster ceneter
+			# 	for cluster_idx in clust_sizes_ordered:
+			# 		dists.append(self._metric_func(updated_clusters[cluster_idx].cc, largest_cluster))
+			# 	for ec_idx in empty_clusters_inds:
+			# 		furthest_cluster = updated_clusters[clust_sizes_ordered.pop(np.argmax(np.array(dists)))]
+			# 		print(furthest_cluster.cc.shape)
+			# 		dists.pop(np.argmax(np.array(dists)))
+			# 		pnt_dists = []
+			# 		for point_idx in range(furthest_cluster.data_inds.shape[0]):
+			# 			pnt_dists.append(self._metric_func(arr[furthest_cluster.data_inds[point_idx]], largest_cluster))
+			# 		# 	print(np.array(pnt_dists))
+			# 		# print('transition')
+			# 		# print(np.array(pnt_dists))
+			# 		new_cc = arr[furthest_cluster.data_inds[np.argmax(np.array(pnt_dists))], :]
+			# 		updated_clusters[ec_idx].cc = new_cc
+			# # print(num_empty_clusters, np.array(clust_sizes) == 0)
+
 			# calculating difference between previous clusters and new clusters
 			tot_diff = 0
 			for c1, c2 in zip(clusters, updated_clusters):
 				c1_set = set()
-				c1_set.update(c1._data_inds)
+				c1_set.update(c1.data_inds)
 				c2_set = set()
-				c2_set.update(c2._data_inds)
+				c2_set.update(c2.data_inds)
 				temp_diff = len(c2_set - c1_set)
 				tot_diff += temp_diff
 			# stopping iteration if the clusters converge
 			if tot_diff == 0:
 				clusters = updated_clusters
+				print(f'Converged after {iteration} iterations.')
 				break
 			else:
 				clusters = updated_clusters
+				if iteration == self._max_iter - 1:
+					print(f'Reached maximum ({self._max_iter}) number of iterations')
 		self._final_clusters = clusters
 		# generating cluster labels
 		cluster_labels = np.zeros(arr.shape[0])
 		for cluster_idx in range(len(clusters)):
-			cluster_labels[clusters[cluster_idx]._data_inds] = cluster_idx
+			cluster_labels[clusters[cluster_idx].data_inds] = cluster_idx
 		# returning cluster labels
 		return cluster_labels
