@@ -25,6 +25,6 @@ The data used in this analsis comes from [Smith and Smith, 2020](https://chemrxi
 ### Testing
 Testing is as simple as running
 ```
-python -m pytest test/*
+python -m pytest
 ```
 from the root directory of this project.
