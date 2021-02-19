@@ -2,7 +2,7 @@
 ## Author: Parker Grosjean
 ## BMI 203 UCSF
 
-![BuildStatus](https://github.com/ucsf-bmi-203-2021/Project2/workflows/HW2/badge.svg?event=push)
+![BuildStatus](https://github.com/pgrosjean/Project1/workflows/HW1/badge.svg?event=push)
 
 ## This Repository
 
