@@ -7,13 +7,13 @@ import pandas as pd
 ############################################################
 def preprocess_data(csv_filename, fingerprint_length=1024):
 	'''
-	This function preprocess converts the data read in from
-	a csv function with ligand information into a set of
+	This function preprocess_data converts the data read in from
+	a csv function with ligand information into a list of
 	ligand class instances.
 
 	Args:
 		csv_filename (str): Name of csv file for reading in.
-		fp_length (int, optional): length of fingerprint. Defaults to 1024.
+		fingerprint_length (int, default=1024): length of fingerprint. Defaults to 1024.
 
 	Returns:
 		ligand_list (list): Set of Ligand class instances.
@@ -43,7 +43,7 @@ def generate_fingerprint_array(ligand_list):
 	return fp_arr
 
 
-def cluster_similarity(arr, c1_labels, c2_labels, index='jaccard'):
+def cluster_similarity(c1_labels, c2_labels, index='jaccard'):
 	'''
 	This function measures the similarity of cluster 1 and cluster 2
 	based on the arr using either the 'jaccard' or 'rand' index.
@@ -60,12 +60,13 @@ def cluster_similarity(arr, c1_labels, c2_labels, index='jaccard'):
 	'''
 	index = index.lower()
 	assert index in ['jaccard', 'rand'], 'Index must be jaccard or rand'
+	assert c1_labels.shape[0] == c2_labels.shape[0]
 	f_00 = 0
 	f_10 = 0
 	f_01 = 0
 	f_11 = 0
-	for i in range(arr.shape[0]):
-		for j in range(arr.shape[0])[i+1:]:
+	for i in range(c1_labels.shape[0]):
+		for j in range(c2_labels.shape[0])[i+1:]:
 			c1 = c1_labels[i] == c1_labels[j]
 			c2 = c2_labels[i] == c2_labels[j]
 			if c1 == False and c2 == False:
@@ -432,7 +433,7 @@ class HierarchicalClustering(BaseMetric):
 				Defaults to Ward linkage. Must be one of 'single', 'upgma',
 				'wpgma', 'complete', 'ward'.
 		'''
-		super(HierarchicalClustering, self).__init__(metric)
+		super().__init__(metric)
 		linkage = linkage.lower()
 		self._linkage = linkage
 		assert linkage in ['single', 'upgma', 'wpgma', 'complete', 'ward']
@@ -664,7 +665,7 @@ class PartitionClustering(BaseMetric):
 			max_iter (int, default=1000): The maximum number of times to iterate
 				the k_means algorithm if it does not converge first.
 		'''
-		super(PartitionClustering, self).__init__(metric)
+		super().__init__(metric)
 		self._num_clusters = num_clusters
 		self._max_iter = max_iter
 		self._final_clusters = None
